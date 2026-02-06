@@ -269,10 +269,5 @@ This project demonstrates advanced distributed systems concepts and serves as a 
 - [Protocol Buffers](https://developers.google.com/protocol-buffers)
 - [Distributed Systems Principles](https://www.distributed-systems.net/)
 
-## 📄 License
-
-This project is part of CSE535 - Distributed Systems coursework and demonstrates practical implementation of distributed consensus algorithms.
-
----
 
 **Note**: This implementation showcases advanced distributed systems concepts including consensus protocols, fault tolerance, and distributed state management. The code demonstrates production-ready patterns for building reliable distributed systems.
