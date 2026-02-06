@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+option go_package = "apaxos-kothuruabhilashreddy/proto";
+
+package paxos;
+
+import "google/protobuf/empty.proto";
+
+// The Paxos transaction request, representing a transaction between two servers.
+message TransactionRequest {
+    string transaction_id = 1;
+    string sender_server = 2;   // Server name sending the transaction
+    string receiver_server = 3; // Server name receiving the transaction
+    int64 amount = 4;           // The transaction amount
+}
+
+// The response from the Paxos transaction operation.
+message TransactionResponse {
+    bool success = 1;           // Whether the transaction succeeded
+    string message = 2;         // Additional information (e.g., error or success message)
+}
+
+
+message CommitRequest {
+    int32 ballot_number = 1;
+    repeated TransactionRequest combinedTransactions = 2;
+}
+
+
+// Paxos agreement request, to handle the consensus step.
+message AcceptRequest {
+    int32 ballot_number = 1;
+    repeated TransactionRequest combinedTransactions = 2;
+    repeated MainBlock syncMainBlock = 3; // The transaction being proposed
+}
+
+// Paxos agreement response, to finalize the decision.
+    message AcceptResponse {
+        bool ACK = 1;      // Whether the proposal was accepted        // Additional info (e.g., why it was rejected)
+    }
+
+message PrepareRequest {
+    // Server proposing the transaction
+    int32 ballot_number = 1;
+}
+
+message PrepareResponse {
+    bool ACK = 1;
+    int32 ballot_number = 2; 
+    int32 accept_number = 3;
+    repeated TransactionRequest accept_value = 4;
+    repeated TransactionRequest local_transactions = 5;        // Additional info (e.g., why it was rejected)
+}
+
+message MainBlock  {
+	int32 BallotNumber = 1;
+	repeated TransactionRequest CombinedTransactions = 2;
+}
+
+message BalanceResponse {
+    int64 balance = 1; 
+}
+
+message StateUpdateRequest {
+    bool state = 1;
+}
+
+message CatchUpRequest {
+    int32 LastCommitedBallot = 1;
+}
+
+message CatchUpResponse {
+    int32 CatchUpBallot = 1;
+    repeated MainBlock CatchUpBlocks = 2;
+}
+
+message GetLocalLogsRequest {
+    string server = 1;
+}
+
+message GetLocalLogsResponse {
+    repeated TransactionRequest LocalLogs = 2;
+}
+
+message GetMainBlocksRequest {
+    string server = 1;
+}
+
+message GetMainBlocksResp {
+    repeated MainBlock MainBlockData = 2;
+}
+
+message GetClientBalFromServerReq {
+    string server = 1;
+    string client = 2;
+}
+
+message GetClientBalFromServerRes {
+    int64 balance = 1;
+}
+
+message PerformanceResponse {
+    int64 incomingRPCCount = 1;
+    int64 outgoingRPCCount = 2;
+    int64 numberofCommitedTransactions = 3;
+}
+
+
+// Paxos Service definition, containing the necessary RPC calls.
+service PaxosService {
+    // Initiates a transaction between two servers.
+    rpc PerformTransaction (TransactionRequest) returns (TransactionResponse);
+
+    // Proposes a transaction to reach consensus via Paxos.
+    rpc Prepare (PrepareRequest) returns (PrepareResponse);
+    rpc Accept (AcceptRequest) returns (AcceptResponse);
+
+    // Sends the decision on whether to accept or reject a proposal.
+    rpc Commit(CommitRequest) returns (google.protobuf.Empty);
+
+    rpc GetBalance(google.protobuf.Empty) returns (BalanceResponse);
+    rpc UpdateServerState(StateUpdateRequest) returns (google.protobuf.Empty);
+    rpc SendCatchUpData(CatchUpRequest) returns (CatchUpResponse);
+    rpc GetLocalLogs(GetLocalLogsRequest) returns (GetLocalLogsResponse);
+    rpc GetMainBlocks(GetMainBlocksRequest) returns (GetMainBlocksResp);
+    rpc GetPerformance(google.protobuf.Empty) returns (PerformanceResponse);
+    rpc GetClientBalanceFromServer(GetClientBalFromServerReq) returns (GetClientBalFromServerRes);
+
+}
